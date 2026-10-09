@@ -29,17 +29,27 @@ class Ball {
             this.size.h = this.asset.height;
         }
     }
+
+    draw() {
+        this.ctx.drawImage(
+            this.asset,
+            50 - this.size.w / 2,
+            50 - this.size.h / 2,
+        );
+    }
 }
 
 const ball = new Ball("img/ball.png", ctx);
 
 Promise.all([ball].map((obj) => obj.preload())).then(() =>
-  requestAnimationFrame(update),
+    requestAnimationFrame(update),
 );
 
 function update(timestamp) {
     ctx.fillStyle = '#eeeeee';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ball.draw();
 
     requestAnimationFrame(update);
 }
