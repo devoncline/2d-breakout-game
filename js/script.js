@@ -10,12 +10,12 @@ const ctx = canvas.getContext('2d');
 // ctx.fill();
 // ctx.closePath();
 
-class Ball {
+class GameObject {
     asset;
     ctx;
     size = { w: undefined, h: undefined };
     pos = { x: 50, y: 50 };
-    vel = { x: 150, y: 150 };
+    // vel = { x: 150, y: 150 };
 
     constructor(url, ctx) {
         this.asset = new Image();
@@ -49,6 +49,24 @@ class Ball {
         );
     }
 
+    // move(dt) {
+    //     this.pos.x += this.vel.x * dt;
+    //     this.pos.y += this.vel.y * dt;
+    // }
+
+    // onCollide({ x, y }) {
+    //     if (x) {
+    //         this.vel.x = -this.vel.x;
+    //     }
+    //     if (y) {
+    //         this.vel.y = -this.vel.y;
+    //     }
+    // }
+}
+
+class Ball extends GameObject {
+    vel = { x: 150, y: 150 };
+
     move(dt) {
         this.pos.x += this.vel.x * dt;
         this.pos.y += this.vel.y * dt;
@@ -58,6 +76,7 @@ class Ball {
         if (x) {
             this.vel.x = -this.vel.x;
         }
+
         if (y) {
             this.vel.y = -this.vel.y;
         }
