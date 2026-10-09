@@ -143,6 +143,7 @@ class Brick extends GameObject {
     }
 
     onCollide() {
+        ball.playWobble();
         bricks.splice(bricks.indexOf(this), 1);
         colliders.splice(colliders.indexOf(this), 1);
         score += 10;
@@ -180,6 +181,8 @@ Promise.all([ball, paddle, ...bricks].map((obj) => obj.preload())).then(() => {
 function update(timestamp) {
     const dt = lastTimestamp === null ? 0 : (timestamp - lastTimestamp) / 1000;
     lastTimestamp = timestamp;
+
+    ball.updateAnimation(dt);
     moveBall(dt);
 
     ctx.fillStyle = "#eeeeee";
