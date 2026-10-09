@@ -109,12 +109,10 @@ canvas.addEventListener("pointermove", (event) => {
     );
 });
 
-Promise.all([ball, paddle].map((obj) => obj.preload())).then(() =>
-    requestAnimationFrame(update),
-);Promise.all([ball, paddle].map((obj) => obj.preload())).then(() => {
-  ball.pos.x = paddle.pos.x;
-  ball.pos.y = paddle.hitbox.top - ball.size.h / 2;
-  requestAnimationFrame(update);
+Promise.all([ball, paddle].map((obj) => obj.preload())).then(() => {
+    ball.pos.x = paddle.pos.x;
+    ball.pos.y = paddle.hitbox.top - ball.size.h / 2;
+    requestAnimationFrame(update);
 });
 
 let lastTimestamp = null;
