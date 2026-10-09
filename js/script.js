@@ -14,8 +14,8 @@ class GameObject {
     asset;
     ctx;
     size = { w: undefined, h: undefined };
-    pos = { x: 50, y: 50 };
-    // vel = { x: 150, y: 150 };
+    pos = { x: 0, y: 0 };
+    origin = { x: 0.5, y: 0.5 };
 
     constructor(url, ctx) {
         this.asset = new Image();
@@ -33,35 +33,20 @@ class GameObject {
     }
 
     get hitbox() {
+        const left = this.pos.x - this.size.w * this.origin.x;
+        const top = this.pos.y - this.size.h * this.origin.y;
         return {
-            left: this.pos.x - this.size.w / 2,
-            right: this.pos.x + this.size.w / 2,
-            top: this.pos.y - this.size.h / 2,
-            bottom: this.pos.y + this.size.h / 2,
+            left,
+            right: left + this.size.w,
+            top,
+            bottom: top + this.size.h,
         };
     }
-
     draw() {
-        this.ctx.drawImage(
-            this.asset,
-            this.pos.x - this.size.w / 2,
-            this.pos.y - this.size.h / 2,
-        );
+        const { left, top } = this.hitbox;
+        this.ctx.drawImage(this.asset, left, top);
     }
-
-    // move(dt) {
-    //     this.pos.x += this.vel.x * dt;
-    //     this.pos.y += this.vel.y * dt;
-    // }
-
-    // onCollide({ x, y }) {
-    //     if (x) {
-    //         this.vel.x = -this.vel.x;
-    //     }
-    //     if (y) {
-    //         this.vel.y = -this.vel.y;
-    //     }
-    // }
+    onCollide() { }
 }
 
 class Ball extends GameObject {
