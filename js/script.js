@@ -107,6 +107,9 @@ const ball = new Ball("img/ball.png", ctx);
 const paddle = new Paddle("img/paddle.png", ctx);
 colliders.push(paddle);
 const bricks = initBricks();
+for (const brick of bricks) {
+    colliders.push(brick);
+}
 
 
 
@@ -137,6 +140,10 @@ function update(timestamp) {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ball.draw();
     paddle.draw();
+
+    for (const brick of bricks) {
+        brick.draw();
+    }
 
     requestAnimationFrame(update);
 }
@@ -231,5 +238,43 @@ function moveBall(dt) {
             collider.onCollide?.({ x: hit.x !== null, y: hit.y !== null });
         }
     }
+}
+
+function initBricks() {
+    const bricksLayout = {
+        width: 50,
+        height: 20,
+        count: {
+            row: 3,
+            col: 7,
+        },
+        offset: {
+            top: 50,
+            left: 60,
+        },
+        padding: 10,
+    };
+    const bricks = [];
+    for (let c = 0; c < bricksLayout.count.col; c++) {
+        for (let r = 0; r < bricksLayout.count.row; r++) {
+            const brickX =
+                c * (bricksLayout.width + bricksLayout.padding) +
+                bricksLayout.offset.left;
+            const brickY =
+                r * (bricksLayout.height + bricksLayout.padding) +
+                bricksLayout.offset.top;
+
+            const newBrick = new Brick(
+                "img/brick.png",
+                ctx,
+                brickX,
+                brickY,
+                bricksLayout.width,
+                bricksLayout.height,
+            );
+            bricks.push(newBrick);
+        }
+    }
+    return bricks;
 }
 
