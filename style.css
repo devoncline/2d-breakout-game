@@ -13,4 +13,5 @@ canvas {
     display: block;
     width: min(100vw, 150vh);
     height: auto;
+    touch-action: none;
 }
