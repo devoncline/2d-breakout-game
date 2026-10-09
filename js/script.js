@@ -87,19 +87,21 @@ class Paddle extends GameObject {
 }
 
 class Brick extends GameObject {
-  constructor(url, ctx, x, y, w, h) {
-    super(url, ctx);
-    this.pos = { x, y };
-    this.size = { w, h };
-  }
-  draw() {
-    const { left, top } = this.hitbox;
-    this.ctx.drawImage(this.asset, left, top, this.size.w, this.size.h);
-  }
+    constructor(url, ctx, x, y, w, h) {
+        super(url, ctx);
+        this.pos = { x, y };
+        this.size = { w, h };
+    }
+    draw() {
+        const { left, top } = this.hitbox;
+        this.ctx.drawImage(this.asset, left, top, this.size.w, this.size.h);
+    }
 }
 
 const ball = new Ball("img/ball.png", ctx);
 const paddle = new Paddle("img/paddle.png", ctx);
+colliders.push(paddle);
+const bricks = initBricks();
 
 const baseWallHitbox = {
     left: -Infinity,
@@ -113,9 +115,6 @@ const colliders = [
     { hitbox: { ...baseWallHitbox, left: canvas.width } },
     { hitbox: { ...baseWallHitbox, bottom: 0 } },
 ];
-
-colliders.push(paddle);
-const bricks = initBricks();
 
 canvas.addEventListener("pointermove", (event) => {
     if (paddle.size.w === undefined) {
