@@ -4,9 +4,9 @@ let lastTimestamp = null;
 let score = 0;
 let lives = 3;
 let showLifeLostText = false;
-const disappearingBricks = [];
 let playing = false;
 const buttonControls = new AbortController();
+const disappearingBricks = [];
 
 const baseWallHitbox = {
     left: -Infinity,
@@ -131,6 +131,7 @@ class Paddle extends GameObject {
     }
     onCollide() {
         ball.playWobble();
+        ball.vel.x = -5 * (this.pos.x - ball.pos.x);
     }
 }
 
