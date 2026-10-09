@@ -2,6 +2,8 @@ const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 let lastTimestamp = null;
 let score = 0;
+let lives = 3;
+let showLifeLostText = false;
 
 const baseWallHitbox = {
     left: -Infinity,
@@ -151,7 +153,7 @@ function update(timestamp) {
     for (const brick of bricks) {
         brick.draw();
     }
-    drawScore();
+    drawStatus();
 
     if (bricks.length === 0) {
         alert("You won the game, congratulations!");
@@ -162,12 +164,25 @@ function update(timestamp) {
     requestAnimationFrame(update);
 }
 
-function drawScore() {
+function drawStatus() {
     ctx.font = "18px Arial";
     ctx.fillStyle = "#0095dd";
     ctx.textBaseline = "top";
     ctx.textAlign = "left";
     ctx.fillText(`Points: ${score}`, 5, 5);
+
+    ctx.textAlign = "right";
+    ctx.fillText(`Lives: ${lives}`, canvas.width - 5, 5);
+
+    if (showLifeLostText) {
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(
+            "Life lost, click to continue",
+            canvas.width / 2,
+            canvas.height / 2,
+        );
+    }
 }
 
 function getCollision(moving, velocity, obstacle, dt) {
@@ -239,8 +254,7 @@ function moveBall(dt) {
 
         const ballIsOutOfBounds = ball.hitbox.bottom > canvas.height;
         if (ballIsOutOfBounds) {
-            // Game over logic
-            location.reload();
+            ballLeaveScreen();
             return;
         }
 
@@ -298,5 +312,29 @@ function initBricks() {
         }
     }
     return bricks;
+}
+
+function ballLeaveScreen() {
+    lives--;
+    if (lives === 0) {
+        // Game over logic
+        location.reload();
+        return;
+    }
+
+    paddle.pos.x = canvas.width / 2;
+    ball.pos.x = paddle.pos.x;
+    ball.pos.y = paddle.hitbox.top - ball.size.h / 2;
+    ball.vel = { x: 0, y: 0 };
+    showLifeLostText = true;
+    canvas.addEventListener(
+        "pointerdown",
+        () => {
+            showLifeLostText = false;
+            ball.vel = { x: 150, y: -150 };
+            lastTimestamp = null;
+        },
+        { once: true },
+    );
 }
 
