@@ -1,6 +1,7 @@
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 let lastTimestamp = null;
+let score = 0;
 
 const baseWallHitbox = {
     left: -Infinity,
@@ -101,6 +102,12 @@ class Brick extends GameObject {
         const { left, top } = this.hitbox;
         this.ctx.drawImage(this.asset, left, top, this.size.w, this.size.h);
     }
+
+    onCollide() {
+        bricks.splice(bricks.indexOf(this), 1);
+        colliders.splice(colliders.indexOf(this), 1);
+        score += 10;
+    }
 }
 
 const ball = new Ball("img/ball.png", ctx);
@@ -144,8 +151,23 @@ function update(timestamp) {
     for (const brick of bricks) {
         brick.draw();
     }
+    drawScore();
+
+    if (bricks.length === 0) {
+        alert("You won the game, congratulations!");
+        location.reload();
+        return;
+    }
 
     requestAnimationFrame(update);
+}
+
+function drawScore() {
+    ctx.font = "18px Arial";
+    ctx.fillStyle = "#0095dd";
+    ctx.textBaseline = "top";
+    ctx.textAlign = "left";
+    ctx.fillText(`Points: ${score}`, 5, 5);
 }
 
 function getCollision(moving, velocity, obstacle, dt) {
@@ -188,7 +210,7 @@ function getCollision(moving, velocity, obstacle, dt) {
 }
 
 function moveBall(dt) {
-    while (dt > 0) {
+    while (dt > 0 && bricks.length > 0) {
         // Avoid repeatedly triggering the getter
         const ballHitbox = ball.hitbox;
         let hitTime = dt;
