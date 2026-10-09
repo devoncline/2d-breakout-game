@@ -11,6 +11,8 @@ const ctx = canvas.getContext('2d');
 // ctx.closePath();
 
 class GameObject {
+    static assets = new Map();
+    url;
     asset;
     ctx;
     size = { w: undefined, h: undefined };
@@ -18,14 +20,20 @@ class GameObject {
     origin = { x: 0.5, y: 0.5 };
 
     constructor(url, ctx) {
-        this.asset = new Image();
-        this.asset.src = url;
+        this.url = url;
         this.ctx = ctx;
     }
 
     async preload() {
-        await this.asset.decode();
-
+        if (!GameObject.assets.has(this.url)) {
+            const asset = new Image();
+            asset.src = this.url;
+            GameObject.assets.set(
+                this.url,
+                asset.decode().then(() => asset),
+            );
+        }
+        this.asset = await GameObject.assets.get(this.url);
         if (this.size.w === undefined) {
             this.size.w = this.asset.width;
             this.size.h = this.asset.height;
@@ -78,6 +86,18 @@ class Paddle extends GameObject {
     }
 }
 
+class Brick extends GameObject {
+  constructor(url, ctx, x, y, w, h) {
+    super(url, ctx);
+    this.pos = { x, y };
+    this.size = { w, h };
+  }
+  draw() {
+    const { left, top } = this.hitbox;
+    this.ctx.drawImage(this.asset, left, top, this.size.w, this.size.h);
+  }
+}
+
 const ball = new Ball("img/ball.png", ctx);
 const paddle = new Paddle("img/paddle.png", ctx);
 
@@ -92,10 +112,10 @@ const colliders = [
     { hitbox: { ...baseWallHitbox, right: 0 } },
     { hitbox: { ...baseWallHitbox, left: canvas.width } },
     { hitbox: { ...baseWallHitbox, bottom: 0 } },
-    { hitbox: { ...baseWallHitbox, top: canvas.height } },
 ];
 
 colliders.push(paddle);
+const bricks = initBricks();
 
 canvas.addEventListener("pointermove", (event) => {
     if (paddle.size.w === undefined) {
@@ -109,7 +129,7 @@ canvas.addEventListener("pointermove", (event) => {
     );
 });
 
-Promise.all([ball, paddle].map((obj) => obj.preload())).then(() => {
+Promise.all([ball, paddle, ...bricks].map((obj) => obj.preload())).then(() => {
     ball.pos.x = paddle.pos.x;
     ball.pos.y = paddle.hitbox.top - ball.size.h / 2;
     requestAnimationFrame(update);
@@ -195,6 +215,13 @@ function moveBall(dt) {
 
         ball.move(hitTime);
         dt -= hitTime;
+
+        const ballIsOutOfBounds = ball.hitbox.bottom > canvas.height;
+        if (ballIsOutOfBounds) {
+            // Game over logic
+            location.reload();
+            return;
+        }
 
         if (contacts.length === 0) {
             break;
