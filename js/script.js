@@ -32,6 +32,15 @@ class Ball {
         }
     }
 
+    get hitbox() {
+        return {
+            left: this.pos.x - this.size.w / 2,
+            right: this.pos.x + this.size.w / 2,
+            top: this.pos.y - this.size.h / 2,
+            bottom: this.pos.y + this.size.h / 2,
+        };
+    }
+
     draw() {
         this.ctx.drawImage(
             this.asset,
@@ -44,6 +53,15 @@ class Ball {
         this.pos.x += this.vel.x * dt;
         this.pos.y += this.vel.y * dt;
     }
+
+    onCollide({ x, y }) {
+    if (x) {
+      this.vel.x = -this.vel.x;
+    }
+    if (y) {
+      this.vel.y = -this.vel.y;
+    }
+  }
 }
 
 const ball = new Ball("img/ball.png", ctx);
@@ -55,13 +73,15 @@ Promise.all([ball].map((obj) => obj.preload())).then(() =>
 let lastTimestamp = null;
 function update(timestamp) {
     const dt = lastTimestamp === null ? 0 : (timestamp - lastTimestamp) / 1000;
-lastTimestamp = timestamp;
-ball.move(dt);
+    lastTimestamp = timestamp;
+    ball.move(dt);
 
-ctx.fillStyle = "#eeeeee";
-ctx.fillRect(0, 0, canvas.width, canvas.height);
-ball.draw();
+    ctx.fillStyle = "#eeeeee";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ball.draw();
 
     requestAnimationFrame(update);
 }
+
+
 
