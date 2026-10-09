@@ -31,7 +31,11 @@ class Ball {
     }
 }
 
-requestAnimationFrame(update);
+const ball = new Ball('assets/ball.png', ctx);
+
+Promise.all([ball.map((obj) => obj.preload())]).then(() => {
+    requestAnimationFrame(update);
+});
 
 function update(timestamp) {
     ctx.fillStyle = '#eeeeee';
