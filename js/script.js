@@ -14,6 +14,8 @@ class Ball {
     asset;
     ctx;
     size = { w: undefined, h: undefined };
+    pos = { x: 50, y: 50 };
+    vel = { x: 150, y: 150 };
 
     constructor(url, ctx) {
         this.asset = new Image();
@@ -33,9 +35,14 @@ class Ball {
     draw() {
         this.ctx.drawImage(
             this.asset,
-            50 - this.size.w / 2,
-            50 - this.size.h / 2,
+            this.pos.x - this.size.w / 2,
+            this.pos.y - this.size.h / 2,
         );
+    }
+
+    move(dt) {
+        this.pos.x += this.vel.x * dt;
+        this.pos.y += this.vel.y * dt;
     }
 }
 
@@ -45,11 +52,15 @@ Promise.all([ball].map((obj) => obj.preload())).then(() =>
     requestAnimationFrame(update),
 );
 
+let lastTimestamp = null;
 function update(timestamp) {
-    ctx.fillStyle = '#eeeeee';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const dt = lastTimestamp === null ? 0 : (timestamp - lastTimestamp) / 1000;
+lastTimestamp = timestamp;
+ball.move(dt);
 
-    ball.draw();
+ctx.fillStyle = "#eeeeee";
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+ball.draw();
 
     requestAnimationFrame(update);
 }
