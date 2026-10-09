@@ -73,7 +73,7 @@ class Ball extends GameObject {
     wobbleFrames = [0, 1, 0, 2, 0, 1, 0, 2, 0];
     wobbleTime = null;
     pos = { x: undefined, y: undefined };
-    vel = { x: 150, y: -150 };
+    vel = { x: 0, y: 0 };
 
     move(dt) {
         this.pos.x += this.vel.x * dt;
@@ -210,7 +210,7 @@ const startButton = new Button("img/button.png", ctx);
 
 
 canvas.addEventListener("pointermove", (event) => {
-    if (paddle.size.w === undefined) {
+    if (!playing || paddle.size.w === undefined) {
         return;
     }
     const bounds = canvas.getBoundingClientRect();
@@ -221,9 +221,12 @@ canvas.addEventListener("pointermove", (event) => {
     );
 });
 
-Promise.all([ball, paddle, ...bricks].map((obj) => obj.preload())).then(() => {
+Promise.all(
+    [ball, paddle, ...bricks, startButton].map((obj) => obj.preload()),
+).then(() => {
     ball.pos.x = paddle.pos.x;
     ball.pos.y = paddle.hitbox.top - ball.size.h / 2;
+    initButtonControls();
     requestAnimationFrame(update);
 });
 
@@ -506,5 +509,17 @@ function initButtonControls() {
         },
         options,
     );
+
+    canvas.addEventListener("pointerleave", resetFrame, options);
+    canvas.addEventListener("pointercancel", cancelPress, options);
+    canvas.addEventListener("lostpointercapture", cancelPress, options);
+
+}
+
+function startGame() {
+    buttonControls.abort();
+    ball.vel = { x: 150, y: -150 };
+    playing = true;
+    lastTimestamp = null;
 }
 
