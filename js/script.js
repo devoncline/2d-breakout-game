@@ -152,6 +152,7 @@ class Brick extends GameObject {
         );
     }
     onCollide() {
+        ball.playWobble();
         bricks.splice(bricks.indexOf(this), 1);
         colliders.splice(colliders.indexOf(this), 1);
         disappearingBricks.push(this);
@@ -206,13 +207,16 @@ function update(timestamp) {
     ball.draw();
     paddle.draw();
 
-    // drawing code...
+    for (const brick of bricks) {
+        brick.draw();
+    }
+
     for (const brick of disappearingBricks) {
         brick.draw();
     }
     drawStatus();
 
-    if (bricks.length === 0) {
+    if (bricks.length === 0 && disappearingBricks.length === 0) {
         alert("You won the game, congratulations!");
         location.reload();
         return;
