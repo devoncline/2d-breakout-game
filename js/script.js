@@ -81,6 +81,22 @@ class Paddle extends GameObject {
 const ball = new Ball("img/ball.png", ctx);
 const paddle = new Paddle("img/paddle.png", ctx);
 
+const baseWallHitbox = {
+  left: -Infinity,
+  right: Infinity,
+  top: -Infinity,
+  bottom: Infinity,
+};
+
+const colliders = [
+  { hitbox: { ...baseWallHitbox, right: 0 } },
+  { hitbox: { ...baseWallHitbox, left: canvas.width } },
+  { hitbox: { ...baseWallHitbox, bottom: 0 } },
+  { hitbox: { ...baseWallHitbox, top: canvas.height } },
+];
+
+colliders.push(paddle);
+
 Promise.all([ball, paddle].map((obj) => obj.preload())).then(() =>
     requestAnimationFrame(update),
 );
@@ -91,11 +107,11 @@ function update(timestamp) {
     lastTimestamp = timestamp;
     ball.move(dt);
     handleWallCollisions(ball, canvas.width, canvas.height);
-    paddle.draw();
 
     ctx.fillStyle = "#eeeeee";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ball.draw();
+    paddle.draw();
 
     requestAnimationFrame(update);
 }
