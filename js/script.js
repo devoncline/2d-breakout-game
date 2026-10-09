@@ -55,13 +55,13 @@ class Ball {
     }
 
     onCollide({ x, y }) {
-    if (x) {
-      this.vel.x = -this.vel.x;
+        if (x) {
+            this.vel.x = -this.vel.x;
+        }
+        if (y) {
+            this.vel.y = -this.vel.y;
+        }
     }
-    if (y) {
-      this.vel.y = -this.vel.y;
-    }
-  }
 }
 
 const ball = new Ball("img/ball.png", ctx);
@@ -75,6 +75,7 @@ function update(timestamp) {
     const dt = lastTimestamp === null ? 0 : (timestamp - lastTimestamp) / 1000;
     lastTimestamp = timestamp;
     ball.move(dt);
+    handleWallCollisions(ball, canvas.width, canvas.height);
 
     ctx.fillStyle = "#eeeeee";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -83,5 +84,17 @@ function update(timestamp) {
     requestAnimationFrame(update);
 }
 
+function handleWallCollisions(object, width, height) {
+    const hitbox = object.hitbox;
+    const hittingLeftBoundary = hitbox.left <= 0 && object.vel.x < 0;
+    const hittingRightBoundary = hitbox.right >= width && object.vel.x > 0;
+    const hittingTopBoundary = hitbox.top <= 0 && object.vel.y < 0;
+    const hittingBottomBoundary = hitbox.bottom >= height && object.vel.y > 0;
 
+    const x = hittingLeftBoundary || hittingRightBoundary;
+    const y = hittingTopBoundary || hittingBottomBoundary;
+    if (x || y) {
+        object.onCollide({ x, y });
+    }
+}
 
