@@ -1,6 +1,19 @@
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
 
+const baseWallHitbox = {
+    left: -Infinity,
+    right: Infinity,
+    top: -Infinity,
+    bottom: Infinity,
+};
+
+const colliders = [
+    { hitbox: { ...baseWallHitbox, right: 0 } },
+    { hitbox: { ...baseWallHitbox, left: canvas.width } },
+    { hitbox: { ...baseWallHitbox, bottom: 0 } },
+];
+
 // ctx.fillStyle = '#eeeeee';
 // ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -103,18 +116,7 @@ const paddle = new Paddle("img/paddle.png", ctx);
 colliders.push(paddle);
 const bricks = initBricks();
 
-const baseWallHitbox = {
-    left: -Infinity,
-    right: Infinity,
-    top: -Infinity,
-    bottom: Infinity,
-};
 
-const colliders = [
-    { hitbox: { ...baseWallHitbox, right: 0 } },
-    { hitbox: { ...baseWallHitbox, left: canvas.width } },
-    { hitbox: { ...baseWallHitbox, bottom: 0 } },
-];
 
 canvas.addEventListener("pointermove", (event) => {
     if (paddle.size.w === undefined) {
