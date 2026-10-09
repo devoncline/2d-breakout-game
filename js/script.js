@@ -169,6 +169,17 @@ class Button extends GameObject {
         super(url, ctx);
         this.pos = { x: ctx.canvas.width / 2, y: ctx.canvas.height / 2 };
     }
+
+    containsPointer(event) {
+        const bounds = this.ctx.canvas.getBoundingClientRect();
+        const x =
+            ((event.clientX - bounds.left) * this.ctx.canvas.width) / bounds.width;
+        const y =
+            ((event.clientY - bounds.top) * this.ctx.canvas.height) / bounds.height;
+        const { left, right, top, bottom } = this.hitbox;
+        return x >= left && x <= right && y >= top && y <= bottom;
+    }
+
     draw() {
         const columns = Math.floor(this.asset.width / this.size.w);
         const { left, top } = this.hitbox;
@@ -193,6 +204,8 @@ const bricks = initBricks();
 for (const brick of bricks) {
     colliders.push(brick);
 }
+
+const startButton = new Button("img/button.png", ctx);
 
 
 
@@ -426,6 +439,72 @@ function ballLeaveScreen() {
             lastTimestamp = null;
         },
         { once: true },
+    );
+}
+
+function initButtonControls() {
+    const options = { signal: buttonControls.signal };
+    let pressedPointer = null;
+
+    function resetFrame(event) {
+        if (pressedPointer === null || pressedPointer === event.pointerId) {
+            startButton.frame = 0;
+        }
+    }
+
+    function cancelPress(event) {
+        if (event.pointerId === pressedPointer) {
+            pressedPointer = null;
+            resetFrame(event);
+        }
+    }
+
+    canvas.addEventListener(
+        "pointermove",
+        (event) => {
+            if (pressedPointer !== null && pressedPointer !== event.pointerId) {
+                return;
+            }
+            if (startButton.containsPointer(event)) {
+                startButton.frame = pressedPointer === null ? 1 : 2;
+            } else {
+                resetFrame(event);
+            }
+        },
+        options,
+    );
+
+    canvas.addEventListener(
+        "pointerdown",
+        (event) => {
+            if (
+                event.button !== 0 ||
+                pressedPointer !== null ||
+                !startButton.containsPointer(event)
+            ) {
+                return;
+            }
+            pressedPointer = event.pointerId;
+            startButton.frame = 2;
+            canvas.setPointerCapture(event.pointerId);
+        },
+        options,
+    );
+
+    canvas.addEventListener(
+        "pointerup",
+        (event) => {
+            if (event.pointerId !== pressedPointer) {
+                return;
+            }
+            if (startButton.containsPointer(event)) {
+                pressedPointer = null;
+                startGame();
+            } else {
+                cancelPress(event);
+            }
+        },
+        options,
     );
 }
 
