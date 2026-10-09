@@ -1,5 +1,6 @@
 const canvas = document.getElementById('game-canvas');
 const ctx = canvas.getContext('2d');
+let lastTimestamp = null;
 
 const baseWallHitbox = {
     left: -Infinity,
@@ -13,15 +14,6 @@ const colliders = [
     { hitbox: { ...baseWallHitbox, left: canvas.width } },
     { hitbox: { ...baseWallHitbox, bottom: 0 } },
 ];
-
-// ctx.fillStyle = '#eeeeee';
-// ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-// ctx.beginPath();
-// ctx.arc(240, 160, 10, 0, Math.PI * 2);
-// ctx.fillStyle = 'red';
-// ctx.fill();
-// ctx.closePath();
 
 class GameObject {
     static assets = new Map();
@@ -136,7 +128,6 @@ Promise.all([ball, paddle, ...bricks].map((obj) => obj.preload())).then(() => {
     requestAnimationFrame(update);
 });
 
-let lastTimestamp = null;
 function update(timestamp) {
     const dt = lastTimestamp === null ? 0 : (timestamp - lastTimestamp) / 1000;
     lastTimestamp = timestamp;
