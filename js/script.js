@@ -105,8 +105,7 @@ let lastTimestamp = null;
 function update(timestamp) {
     const dt = lastTimestamp === null ? 0 : (timestamp - lastTimestamp) / 1000;
     lastTimestamp = timestamp;
-    ball.move(dt);
-    handleWallCollisions(ball, canvas.width, canvas.height);
+    moveBall(dt);
 
     ctx.fillStyle = "#eeeeee";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -116,17 +115,88 @@ function update(timestamp) {
     requestAnimationFrame(update);
 }
 
-function handleWallCollisions(object, width, height) {
-    const hitbox = object.hitbox;
-    const hittingLeftBoundary = hitbox.left <= 0 && object.vel.x < 0;
-    const hittingRightBoundary = hitbox.right >= width && object.vel.x > 0;
-    const hittingTopBoundary = hitbox.top <= 0 && object.vel.y < 0;
-    const hittingBottomBoundary = hitbox.bottom >= height && object.vel.y > 0;
+function getCollision(moving, velocity, obstacle, dt) {
+  const width = moving.right - moving.left;
+  const height = moving.bottom - moving.top;
+  const movingPos = { x: moving.left, y: moving.top };
+  const left = obstacle.left - width;
+  const right = obstacle.right;
+  const top = obstacle.top - height;
+  const bottom = obstacle.bottom;
+  const hit = { time: dt, x: null, y: null };
 
-    const x = hittingLeftBoundary || hittingRightBoundary;
-    const y = hittingTopBoundary || hittingBottomBoundary;
-    if (x || y) {
-        object.onCollide({ x, y });
+  function checkFace(axis, direction, coordinate, min, max) {
+    if (velocity[axis] * direction <= 0) {
+      return;
     }
+    const time = (coordinate - movingPos[axis]) / velocity[axis];
+    if (time < 0 || time > hit.time) {
+      return;
+    }
+    const otherAxis = axis === "x" ? "y" : "x";
+    const otherPosition = movingPos[otherAxis] + velocity[otherAxis] * time;
+    if (otherPosition < min || otherPosition > max) {
+      return;
+    }
+    if (time < hit.time) {
+      hit.x = null;
+      hit.y = null;
+    }
+    hit.time = time;
+    hit[axis] = coordinate;
+  }
+
+  checkFace("x", 1, left, top, bottom);
+  checkFace("x", -1, right, top, bottom);
+  checkFace("y", 1, top, left, right);
+  checkFace("y", -1, bottom, left, right);
+
+  return hit.x === null && hit.y === null ? null : hit;
+}
+
+function moveBall(dt) {
+  while (dt > 0) {
+    // Avoid repeatedly triggering the getter
+    const ballHitbox = ball.hitbox;
+    let hitTime = dt;
+    let hitX = null;
+    let hitY = null;
+    let contacts = [];
+
+    for (const collider of colliders) {
+      const hit = getCollision(ballHitbox, ball.vel, collider.hitbox, hitTime);
+      if (hit === null) {
+        continue;
+      }
+      if (hit.time < hitTime) {
+        hitX = null;
+        hitY = null;
+        contacts = [];
+      }
+      hitTime = hit.time;
+      hitX = hit.x ?? hitX;
+      hitY = hit.y ?? hitY;
+      contacts.push({ collider, hit });
+    }
+
+    ball.move(hitTime);
+    dt -= hitTime;
+
+    if (contacts.length === 0) {
+      break;
+    }
+    // Snap the position to the point of contact to avoid floating point errors
+    if (hitX !== null) {
+      ball.pos.x = hitX + ball.size.w / 2;
+    }
+    if (hitY !== null) {
+      ball.pos.y = hitY + ball.size.h / 2;
+    }
+
+    ball.onCollide({ x: hitX !== null, y: hitY !== null });
+    for (const { collider, hit } of contacts) {
+      collider.onCollide?.({ x: hit.x !== null, y: hit.y !== null });
+    }
+  }
 }
 
