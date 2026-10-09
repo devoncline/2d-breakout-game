@@ -151,7 +151,7 @@ function getCollision(moving, velocity, obstacle, dt) {
     const bottom = obstacle.bottom;
     const hit = { time: dt, x: null, y: null };
 
-    function checkFace(axis, direction, coordinate, min, max) {
+    function checkFace(axis, coordinate, min, max, direction) {
         if (velocity[axis] * direction <= 0) {
             return;
         }
@@ -172,10 +172,10 @@ function getCollision(moving, velocity, obstacle, dt) {
         hit[axis] = coordinate;
     }
 
-    checkFace("x", 1, left, top, bottom);
-    checkFace("x", -1, right, top, bottom);
-    checkFace("y", 1, top, left, right);
-    checkFace("y", -1, bottom, left, right);
+    checkFace("x", left, top, bottom, 1);
+    checkFace("x", right, top, bottom, -1);
+    checkFace("y", top, left, right, 1);
+    checkFace("y", bottom, left, right, -1);
 
     return hit.x === null && hit.y === null ? null : hit;
 }
