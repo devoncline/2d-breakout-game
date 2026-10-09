@@ -5,6 +5,8 @@ let score = 0;
 let lives = 3;
 let showLifeLostText = false;
 const disappearingBricks = [];
+let playing = false;
+const buttonControls = new AbortController();
 
 const baseWallHitbox = {
     left: -Infinity,
@@ -160,6 +162,30 @@ class Brick extends GameObject {
     }
 }
 
+class Button extends GameObject {
+    size = { w: 120, h: 40 };
+    frame = 0;
+    constructor(url, ctx) {
+        super(url, ctx);
+        this.pos = { x: ctx.canvas.width / 2, y: ctx.canvas.height / 2 };
+    }
+    draw() {
+        const columns = Math.floor(this.asset.width / this.size.w);
+        const { left, top } = this.hitbox;
+        this.ctx.drawImage(
+            this.asset,
+            (this.frame % columns) * this.size.w,
+            Math.floor(this.frame / columns) * this.size.h,
+            this.size.w,
+            this.size.h,
+            left,
+            top,
+            this.size.w,
+            this.size.h,
+        );
+    }
+}
+
 const ball = new Ball("img/wobble.png", ctx);
 const paddle = new Paddle("img/paddle.png", ctx);
 colliders.push(paddle);
@@ -215,6 +241,10 @@ function update(timestamp) {
         brick.draw();
     }
     drawStatus();
+
+    if (!playing) {
+        startButton.draw();
+    }
 
     if (bricks.length === 0 && disappearingBricks.length === 0) {
         alert("You won the game, congratulations!");
