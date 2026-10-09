@@ -66,6 +66,9 @@ class GameObject {
 }
 
 class Ball extends GameObject {
+    size = { w: 20, h: 20 };
+    wobbleFrames = [0, 1, 0, 2, 0, 1, 0, 2, 0];
+    wobbleTime = null;
     pos = { x: undefined, y: undefined };
     vel = { x: 150, y: -150 };
 
@@ -83,6 +86,37 @@ class Ball extends GameObject {
             this.vel.y = -this.vel.y;
         }
     }
+    playWobble() {
+        this.wobbleTime = 0;
+    }
+    updateAnimation(dt) {
+        if (this.wobbleTime === null) {
+            return;
+        }
+        this.wobbleTime += dt;
+        if (this.wobbleTime >= this.wobbleFrames.length * (1 / 24)) {
+            this.wobbleTime = null;
+        }
+    }
+    draw() {
+        const frame =
+            this.wobbleTime === null
+                ? 0
+                : this.wobbleFrames[Math.floor(this.wobbleTime / (1 / 24))];
+        const { left, top } = this.hitbox;
+        this.ctx.drawImage(
+            this.asset,
+            frame * this.size.w,
+            0,
+            this.size.w,
+            this.size.h,
+            left,
+            top,
+            this.size.w,
+            this.size.h,
+        );
+    }
+
 }
 
 class Paddle extends GameObject {
@@ -91,6 +125,9 @@ class Paddle extends GameObject {
     constructor(url, ctx) {
         super(url, ctx);
         this.pos = { x: ctx.canvas.width / 2, y: ctx.canvas.height - 5 };
+    }
+    onCollide() {
+        ball.playWobble();
     }
 }
 
@@ -112,7 +149,7 @@ class Brick extends GameObject {
     }
 }
 
-const ball = new Ball("img/ball.png", ctx);
+const ball = new Ball("img/wobble.png", ctx);
 const paddle = new Paddle("img/paddle.png", ctx);
 colliders.push(paddle);
 const bricks = initBricks();
