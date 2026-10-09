@@ -4,6 +4,7 @@ let lastTimestamp = null;
 let score = 0;
 let lives = 3;
 let showLifeLostText = false;
+const disappearingBricks = [];
 
 const baseWallHitbox = {
     left: -Infinity,
@@ -132,20 +133,28 @@ class Paddle extends GameObject {
 }
 
 class Brick extends GameObject {
+    shrinkTime = 0;
     constructor(url, ctx, x, y, w, h) {
         super(url, ctx);
         this.pos = { x, y };
         this.size = { w, h };
     }
     draw() {
-        const { left, top } = this.hitbox;
-        this.ctx.drawImage(this.asset, left, top, this.size.w, this.size.h);
+        const scale = 1 - Math.min(this.shrinkTime / 0.2, 1);
+        const width = this.size.w * scale;
+        const height = this.size.h * scale;
+        this.ctx.drawImage(
+            this.asset,
+            this.pos.x - width / 2,
+            this.pos.y - height / 2,
+            width,
+            height,
+        );
     }
-
     onCollide() {
-        ball.playWobble();
         bricks.splice(bricks.indexOf(this), 1);
         colliders.splice(colliders.indexOf(this), 1);
+        disappearingBricks.push(this);
         score += 10;
     }
 }
@@ -183,6 +192,13 @@ function update(timestamp) {
     lastTimestamp = timestamp;
 
     ball.updateAnimation(dt);
+    for (let i = disappearingBricks.length - 1; i >= 0; i--) {
+        const brick = disappearingBricks[i];
+        brick.shrinkTime += dt;
+        if (brick.shrinkTime >= 0.2) {
+            disappearingBricks.splice(i, 1);
+        }
+    }
     moveBall(dt);
 
     ctx.fillStyle = "#eeeeee";
@@ -190,7 +206,8 @@ function update(timestamp) {
     ball.draw();
     paddle.draw();
 
-    for (const brick of bricks) {
+    // drawing code...
+    for (const brick of disappearingBricks) {
         brick.draw();
     }
     drawStatus();
