@@ -50,6 +50,7 @@ class GameObject {
 }
 
 class Ball extends GameObject {
+    pos = { x: 50, y: 50 };
     vel = { x: 150, y: 150 };
 
     move(dt) {
@@ -68,9 +69,19 @@ class Ball extends GameObject {
     }
 }
 
-const ball = new Ball("img/ball.png", ctx);
+class Paddle extends GameObject {
+    origin = { x: 0.5, y: 1 };
 
-Promise.all([ball].map((obj) => obj.preload())).then(() =>
+    constructor(url, ctx) {
+        super(url, ctx);
+        this.pos = { x: ctx.canvas.width / 2, y: ctx.canvas.height - 5 };
+    }
+}
+
+const ball = new Ball("img/ball.png", ctx);
+const paddle = new Paddle("img/paddle.png", ctx);
+
+Promise.all([ball, paddle].map((obj) => obj.preload())).then(() =>
     requestAnimationFrame(update),
 );
 
@@ -80,6 +91,7 @@ function update(timestamp) {
     lastTimestamp = timestamp;
     ball.move(dt);
     handleWallCollisions(ball, canvas.width, canvas.height);
+    paddle.draw();
 
     ctx.fillStyle = "#eeeeee";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
